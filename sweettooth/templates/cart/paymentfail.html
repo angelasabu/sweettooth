@@ -1,0 +1,23 @@
+{% extends 'base/base.html' %}
+
+
+{% block start %}
+
+<div class="breadcrumb-area section-padding-1 bg-gray breadcrumb-ptb-1">
+    <div class="container-fluid">
+        <div class="breadcrumb-content text-center">
+            <div class="breadcrumb-title">
+                <h2>Payment Failed!!!</h2>
+            </div>
+            <ul>
+                <li>
+                    <a href="{% url 'order_details' order_id=order_id %}">Order Details</a>
+                </li>                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

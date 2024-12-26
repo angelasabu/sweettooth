@@ -1,0 +1,114 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<script>
+    function validateAndSubmitForm() {
+        let isValid = true;
+    
+        // Clear previous error messages
+        document.querySelectorAll('.error-message').forEach(span => span.innerText = '');
+    
+        // Validate fields
+        const couponCode = document.getElementById('coupon_code').value.trim();
+        const percentage = document.getElementById('percentage').value;
+        const limit = document.getElementById('limit').value;
+        const totalCoupons = document.getElementById('total_coupons').value;
+        const expiryDate = document.getElementById('expiry_date').value;
+    
+        if (!couponCode) {
+            document.getElementById('coupon_code_error').innerText = 'Coupon code is required.';
+            isValid = false;
+        }
+        if (!percentage || isNaN(percentage) || percentage <= 0 || percentage > 100) {
+            document.getElementById('percentage_error').innerText = 'Enter a valid percentage between 1 and 100.';
+            isValid = false;
+        }
+        if (!limit || isNaN(limit) || limit < 0) {
+            document.getElementById('limit_error').innerText = 'Enter a valid limit greater than or equal to 0.';
+            isValid = false;
+        }
+        if (!totalCoupons || isNaN(totalCoupons) || totalCoupons < 1) {
+            document.getElementById('total_coupons_error').innerText = 'Enter a valid number of coupons greater than 0.';
+            isValid = false;
+        }
+        if (!expiryDate) {
+            document.getElementById('expiry_date_error').innerText = 'Select an expiry date.';
+            isValid = false;
+        }
+    
+        // Submit form if valid
+        if (isValid) {
+            document.getElementById('productForm').submit();
+        }
+    }
+</script>
+    
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Add New Coupon</h2>
+                <div>
+                    <!-- This button will trigger form submission -->
+                    <button class="btn btn-md rounded font-sm hover-up" type="button" onclick="validateAndSubmitForm()">
+                        Add Coupon
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form id="productForm" method="POST" action="{% url 'add_coupon' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="coupon_code" class="form-label">Coupon Code</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="coupon_code" name="coupon_code" required>
+                            <span class="error-message" id="coupon_code_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="percentage" class="form-label">Percentage</label>
+                            <input type="number" placeholder="Type here" class="form-control" id="percentage" name="percentage" step="0.01" required>
+                            <span class="error-message" id="percentage_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="limit" class="form-label">Limit</label>
+                            <input type="number" placeholder="Type here" class="form-control" id="limit" name="limit" step="0.01" required>
+                            <span class="error-message" id="limit_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="total_coupons" class="form-label">Total Coupons</label>
+                            <input type="number" placeholder="Type here" class="form-control" id="total_coupons" name="total_coupons" required>
+                            <span class="error-message" id="total_coupons_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="expiry_date" class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiry_date" name="expiry_date" required>
+                            <span class="error-message" id="expiry_date_error"></span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.875em;
+        margin-top: 5px;
+    }
+</style>
+
+{% endblock %}

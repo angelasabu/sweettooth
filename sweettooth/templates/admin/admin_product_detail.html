@@ -1,0 +1,118 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Product Details</h2>
+                <div>
+                    <a class="btn btn-md rounded font-sm hover-up" href="{% url 'edit_product' product_id=product.uid  %}" >Edit Product</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <h4 >{{product.product_name}}</h4>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category" class="form-label">Category</label>
+                            <h4 >{{product.category}}</h4>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Product Description</label>
+                            <h4 >{{product.product_description}}</h4>
+                        </div>
+
+                        <!-- Image uploads now inside the form -->
+                        <div class="card-header">
+                            <h4>Product Images</h4>
+                        </div>
+                        <div class="product-images-row">
+                            {% for image in product.product_images.all %}
+                            <div class="image-container">
+                                <img src="/media/{{ image.image }}" alt="Product Image">
+                                <p class="image-title">Image {{ forloop.counter }}</p>  <!-- Title for each image -->
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="card-header">
+                            <h4>Size Variants</h4>
+                        </div>
+                        <div class="size-variants">
+                            {% if product.size_variants.all %}
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Size</th>
+                                            <th>Price</th>
+                                            <th>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for variant in product.size_variants.all %}
+                                        <tr>
+                                            <td>{{ variant.size_name }}</td>
+                                            <td>{{ variant.price }}</td>
+                                            <td>{{ variant.stock }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <p>No size variants available.</p>
+                            {% endif %}
+                        </div>
+                        
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        display: none;
+    }
+
+    .product-images-row {
+        display: flex;
+        justify-content: space-between; /* Ensures equal spacing between images */
+        flex-wrap: wrap; /* Wrap images to next line if there's not enough space */
+        gap: 10px; /* Adds spacing between the image containers */
+    }
+    
+    .image-container {
+        text-align: center; /* Centers the image and title in each container */
+        width: 30%; /* Adjust width to display 3 images in a row */
+        box-sizing: border-box;
+    }
+    
+    .image-container img {
+        width: 100%; /* Makes the image responsive within its container */
+        height: auto;
+        border-radius: 5px; /* Adds a slight roundness to the image corners */
+    }
+    
+    .image-title {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #333; /* Adjust color as needed */
+    }
+    
+</style>
+
+
+
+{% endblock %}

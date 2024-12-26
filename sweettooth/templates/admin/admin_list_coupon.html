@@ -1,0 +1,137 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+<script>
+    function getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                return decodeURIComponent(cookie.substring(name.length + 1));
+            }
+        }
+        return null;
+    }
+    
+    function updateStatus(couponId, newStatus) {
+        const statusBadge = document.getElementById(`status-${couponId}`);
+        const dropdown = document.getElementById(`dropdown-${couponId}`);
+        
+        // AJAX request to update backend
+        fetch(`/adminside/update_coupon_status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ "coupon_id": couponId, "is_active": newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update status badge in the UI
+                statusBadge.classList.toggle("alert-success", newStatus);
+                statusBadge.classList.toggle("alert-danger", !newStatus);
+                statusBadge.textContent = newStatus ? "Active" : "Inactive";
+    
+                // Update dropdown option in the UI
+                dropdown.innerHTML = newStatus ? `
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="updateStatus(${couponId}, false)">
+                            <i class="fas fa-ban"></i> Deactivate
+                        </a>
+                    </li>` 
+                : `
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="updateStatus(${couponId}, true)">
+                            <i class="fas fa-check-circle"></i> Activate
+                        </a>
+                    </li>`;
+            } else {
+                alert("Failed to update status in backend. Please try again.");
+                console.error("Error:", data.error);
+            }
+        })
+        .catch(error => console.error("Error updating status:", error));
+    }
+    
+    
+</script>
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Coupon List</h2>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Coupon Code</th>
+                                    <th scope="col">Percentage</th>
+                                    <th scope="col">Limit</th>
+                                    <th scope="col">Total Coupons</th>
+                                    <th scope="col">Expiry Date</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Update Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coupon in coupons %}
+                                <tr>
+                                    <td>{{ coupon.coupon_code }}</td>
+                                    <td>{{ coupon.percentage }}%</td>
+                                    <td>₹{{ coupon.limit }}</td>
+                                    <td>{{ coupon.total_coupons }}</td>
+                                    <td>{{ coupon.expiry_date|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <span id="status-{{ coupon.id }}" class="badge rounded-pill 
+                                            {% if coupon.is_active %}alert-success{% else %}alert-danger{% endif %}">
+                                            {% if coupon.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm dropdown-toggle">
+                                                Status Change
+                                            </a>
+                                            <ul class="dropdown-menu" id="dropdown-{{ coupon.id }}">
+                                                {% if coupon.is_active %}
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" onclick="updateStatus({{ coupon.id }}, false)">
+                                                            <i class="fas fa-ban"></i> Deactivate
+                                                        </a>
+                                                    </li>
+                                                {% else %}
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" onclick="updateStatus({{ coupon.id }}, true)">
+                                                            <i class="fas fa-check-circle"></i> Activate
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </td>                                    
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

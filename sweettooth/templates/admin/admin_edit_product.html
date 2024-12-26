@@ -1,0 +1,302 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<script>
+    function validateForm() {
+        // Reset previous error messages
+        document.getElementById('product_name_error').style.display = 'none';
+        document.getElementById('category_error').style.display = 'none';
+        document.getElementById('product_description_error').style.display = 'none';
+    
+        // Get the form inputs
+        var productName = document.getElementById('product_name').value;
+        var category = document.getElementById('category').value;
+        var productDescription = document.getElementById('product_description').value;
+    
+        // Allowed image formats
+        var allowedFormats = ['jpg', 'jpeg', 'png'];
+    
+        // Validation flag
+        var valid = true;
+    
+        // Field validations
+        if (productName === "") {
+            document.getElementById('product_name_error').textContent = "Please enter the product name.";
+            document.getElementById('product_name_error').style.display = 'block';
+            valid = false;
+        }
+    
+        if (category === "") {
+            document.getElementById('category_error').textContent = "Please select a category.";
+            document.getElementById('category_error').style.display = 'block';
+            valid = false;
+        }
+    
+        if (productDescription === "") {
+            document.getElementById('product_description_error').textContent = "Please enter the product description.";
+            document.getElementById('product_description_error').style.display = 'block';
+            valid = false;
+        }
+    
+        // Size Variant Validation
+        for (var i = 1; i <= 3; i++) {
+            var sizeName = document.getElementById('size_name_' + i).value;
+            var price = document.getElementById('price_' + i).value;
+            var stock = document.getElementById('stock_' + i).value;
+    
+            if (sizeName === "" && price === "" && stock === "") {
+                // All fields are empty for this size variant, so skip this entry
+                continue;
+            } else if (sizeName === "" || price === "" || stock === "") {
+                document.getElementById('price_error').textContent = "Please fill all fields for each size variant (size name, price, and stock).";
+                document.getElementById('price_error').style.display = 'block';
+                valid = false;
+            } else if (isNaN(price) || parseFloat(price) < 0) {
+                document.getElementById('price_error').textContent = "Price for size variant must be a non-negative number.";
+                document.getElementById('price_error').style.display = 'block';
+                valid = false;
+            } else if (isNaN(stock) || parseInt(stock) < 0) {
+                document.getElementById('stock_error').textContent = "Stock for size variant must be a non-negative integer.";
+                document.getElementById('stock_error').style.display = 'block';
+                valid = false;
+            }
+        }
+    
+        // If all validations pass, submit the form
+        if (valid) {
+            document.getElementById('productForm').submit();
+        }
+    }
+    
+
+
+    function toggleInput(checkbox, inputId) {
+        const inputField = document.getElementById(inputId);
+        inputField.disabled = !checkbox.checked;
+        if (!checkbox.checked) {
+            inputField.value = '';  // Clear the input when checkbox is unchecked
+        }
+    }
+
+    function toggleInput(checkbox, priceInputId, stockInputId) {
+        var priceInput = document.getElementById(priceInputId);
+        var stockInput = document.getElementById(stockInputId);
+        if (checkbox.checked) {
+            priceInput.disabled = false;
+            stockInput.disabled = false;
+        } else {
+            priceInput.disabled = true;
+            stockInput.disabled = true;
+        }
+    }
+    
+    function updateImage(imageId) {
+        const imageInput = document.getElementById(`product_image_${imageId}`);
+        const imageFile = imageInput.files[0];
+        const errorMessage = document.getElementById(`image_error_${imageId}`);
+    
+        console.log(imageId, 'iddd', typeof(imageId))
+        // Reset previous error messages
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+    
+        if (!imageFile) {
+            errorMessage.textContent = "Please select an image to upload.";
+            errorMessage.style.display = 'block';
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append('product_image', imageFile);
+    
+        fetch(`/adminside/edit_product_image/${imageId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}', // Ensure the CSRF token is included
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update the image.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Image updated successfully!');
+                    // Optionally, refresh the page or update the image preview dynamically
+                    location.reload();
+                } else {
+                    errorMessage.textContent = data.error || "An error occurred while updating the image.";
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            });
+    }
+    
+</script>
+
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Edit Product</h2>
+                <div>
+                    <button class="btn btn-md rounded font-sm hover-up" type="button" onclick="validateForm()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form id="productForm" method="POST" action="{% url 'edit_product' product.uid %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <input value="{{ product.product_name }}" type="text" placeholder="Type here" class="form-control" id="product_name" name="product_name">
+                            <span class="error-message" id="product_name_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-control" id="category" name="category">
+                                {% for category in categories %}
+                                    <option value="{{ category.uid }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="error-message" id="category_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Product Description</label>
+                            <textarea placeholder="Type here" class="form-control" id="product_description" name="product_description" rows="4">{{ product.product_description }}</textarea>
+                            <span class="error-message" id="product_description_error"></span>
+                        </div>
+
+                        <!-- Image uploads now inside the form -->
+                        <div class="card-header">
+                            <h4>Product Images</h4>
+                        </div>
+                        <div class="card-body product-images">
+                            {% for image in product.product_images.all %}
+                            <div class="input-upload">
+                                <img src="{{ image.image.url }}" alt="Product Image" width="150" height="150">
+                                <input type="file" class="form-control" name="product_image" id="product_image_{{ image.uid }}" 
+                                    data-image-id="{{ image.uid }}">
+                                <button type="button" class="btn btn-primary" onclick="updateImage('{{ image.uid|escapejs }}')">Update</button>
+                                <span class="error-message" id="image_error_{{ image.uid }}"></span>
+                            </div>
+                            {% empty %}
+                                <!-- Show 3 empty file inputs if no images exist -->
+                                {% for i in "123" %}
+                                <div class="input-upload">
+                                    <input type="file" class="form-control" name="product_image{{ forloop.counter }}">
+                                    <span class="error-message" id="image_error{{ forloop.counter }}"></span>
+                                </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+
+                        <h3>Size Variants</h3>
+                        <div class="size-variant-container">
+                            {% for i in size_variants %}
+                                <div>
+                                    <input type="text" id="size_name_{{ forloop.counter }}" name="size_name_{{ forloop.counter }}" 
+                                        placeholder="Size Name" value="{{ i.size_name }}">
+                                    <input type="number" id="price_{{ forloop.counter }}" name="price_{{ forloop.counter }}" 
+                                        placeholder="Price" value="{{ i.price }}">
+                                    <input type="number" id="stock_{{ forloop.counter }}" name="stock_{{ forloop.counter }}" 
+                                        placeholder="Stock" value="{{ i.stock }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+
+
+                        
+                        
+                        
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+
+    .product-images{
+        display:flex;
+        justify-content:space-around;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        display: none;
+    }
+
+
+    /* Style for the checkbox and number input container */
+    .size-variant-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* Styling for the checkbox label */
+    .size-variant-container label {
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    /* Checkbox styling */
+    .size-variant-container input[type="checkbox"] {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        accent-color: #007bff;
+    }
+
+    /* Styling for the number input */
+    .size-variant-container input[type="number"] {
+        width: 100px;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .size-variant-container input[type="number"]:disabled {
+        background-color: #f1f1f1;
+        cursor: not-allowed;
+    }
+
+    .size-variant-container input[type="number"]:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 4px rgba(0, 123, 255, 0.25);
+    }
+
+</style>
+
+
+
+{% endblock %}

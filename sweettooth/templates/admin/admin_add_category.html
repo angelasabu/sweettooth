@@ -1,0 +1,123 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+<script>
+    function validateCategoryForm() {
+        // Reset previous error messages
+        document.getElementById('category_name_error').style.display = 'none';
+        document.getElementById('category_image_error').style.display = 'none';
+    
+        // Get the form inputs
+        var categoryName = document.getElementById('category_name').value;
+        var categoryImageInput = document.getElementById('category_image');
+        var categoryImage = categoryImageInput.files;
+    
+        // Allowed image formats
+        var allowedFormats = ['jpg', 'jpeg', 'png'];
+    
+        // Validation flag
+        var valid = true;
+    
+        // Field validations
+        if (categoryName === "") {
+            document.getElementById('category_name_error').textContent = "Please enter the category name.";
+            document.getElementById('category_name_error').style.display = 'block';
+            valid = false;
+        } else {
+            // Check if category name already exists
+            fetch(`{% url 'check_category_name' %}?category_name=${categoryName}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    if (data.exists) {
+                        document.getElementById('category_name_error').textContent = "This category name already exists.";
+                        document.getElementById('category_name_error').style.display = 'block';
+                        valid = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    valid = false;
+                });
+        }
+    
+        // Image upload validation
+        if (categoryImage.length === 0) {
+            document.getElementById('category_image_error').textContent = "Please upload a category image.";
+            document.getElementById('category_image_error').style.display = 'block';
+            valid = false;
+        } else {
+            // Check if the image format is allowed
+            var fileName = categoryImage[0].name;
+            var fileExtension = fileName.split('.').pop().toLowerCase();
+    
+            if (!allowedFormats.includes(fileExtension)) {
+                document.getElementById('category_image_error').textContent = "Only .jpg, .jpeg, and .png formats are allowed.";
+                document.getElementById('category_image_error').style.display = 'block';
+                valid = false;
+            }
+        }
+    
+        // If all validations pass, submit the form after ensuring unique category
+        if (valid) {
+            setTimeout(function () {
+                if (valid) {
+                    document.getElementById('categoryForm').submit();
+                }
+            }, 500);
+        }
+    }
+    
+    
+</script>
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title" >Add New Category</h2>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form id="categoryForm" method="POST" action="{% url 'add_category' %}" enctype="multipart/form-data" >
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="category_name" class="form-label">Category Name</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="category_name" name="category_name">
+                            <span class="error-message" id="category_name_error" style="color: red; display: none;"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category_image" class="form-label">Category Image</label>
+                            <input class="form-control" type="file" id="category_image" name="category_image" accept="image/*">
+                            <span class="error-message" id="category_image_error" style="color: red; display: none;"></span>
+                        </div>
+                        <button onclick=" validateCategoryForm();" type="button" class="btn btn-md rounded font-sm hover-up">Add Category</button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        display: none;
+    }
+</style>
+
+
+
+{% endblock %}

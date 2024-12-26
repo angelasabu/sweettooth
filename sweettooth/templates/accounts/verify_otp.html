@@ -1,0 +1,40 @@
+{% extends "base/login_base.html" %}
+
+
+{% block start %}
+
+
+        <div class="login-register-area  pt-60 d-flex justify-content-center align-items-center ">
+            <div class="login">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="login-register-wrap mr-70">
+                            <h3><i class="fa fa-user-o"></i> Verify Otp</h3>
+                            <div class="login-register-form">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {% include "base/alert.html" %}
+
+                                    <div class="sin-login-register">
+                                        <label for="otp">OTP</label>
+                                        <input id="otp" required placeholder= "OTP" type="text" name="otp">
+                                    </div>
+                                    <div class="login-register-btn-remember">
+                                        <div class="login-register-btn">
+                                            <button class="btn" type="submit">Submit</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+
+
+  
+
+
+{% endblock %}

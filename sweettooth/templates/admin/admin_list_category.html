@@ -1,0 +1,171 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function toggleCategoryStatus(categoryUid) {
+        const csrfToken = getCookie('csrftoken');  // Fetch CSRF token
+    
+        // Elements to update dynamically
+        const statusSpan = document.getElementById(`status-${categoryUid}`);
+        const actionButton = document.getElementById(`action-btn-${categoryUid}`);
+    
+        // Determine if the category is currently active
+        const isActive = statusSpan.classList.contains('alert-success');
+    
+        // Make an AJAX request to toggle the status
+        fetch("{% url 'toggle_category_status' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,  // Include CSRF token
+            },
+            body: JSON.stringify({
+                'category_uid': categoryUid,  // Use uid instead of id
+                'is_active': !isActive  // Invert the current status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the UI based on the new status
+                if (data.is_active) {
+                    statusSpan.classList.remove('alert-warning');
+                    statusSpan.classList.add('alert-success');
+                    statusSpan.innerText = 'Active';
+                    actionButton.innerHTML = 'Delete';  // Change button text to "Delete"
+                } else {
+                    statusSpan.classList.remove('alert-success');
+                    statusSpan.classList.add('alert-warning');
+                    statusSpan.innerText = 'Inactive';
+                    actionButton.innerHTML = 'Undo Delete';  // Change button text to "Undo Delete"
+                }
+            } else {
+                alert('Error updating category status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update status');
+        });
+    }
+    
+    
+    
+</script>
+
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Category List</h2>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div>
+            <a href="#" class="btn btn-light rounded font-md">Export</a>
+            <a href="#" class="btn btn-light rounded  font-md">Import</a>
+            <a href="#" class="btn btn-primary btn-sm rounded">Create new</a>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row align-items-center">
+                <div class="col col-check flex-grow-0">
+                    <div class="form-check ms-2">
+                        <input class="form-check-input" type="checkbox" value="">
+                    </div>
+                </div>
+                <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+                    <select class="form-select">
+                        <option selected>All category</option>
+                        <option>Electronics</option>
+                        <option>Clothes</option>
+                        <option>Automobile</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-6">
+                    <input type="date" value="02.05.2021" class="form-control">
+                </div>
+                <div class="col-md-2 col-6">
+                    <select class="form-select">
+                        <option selected>Status</option>
+                        <option>Active</option>
+                        <option>Disabled</option>
+                        <option>Show all</option>
+                    </select>
+                </div>
+            </div>
+        </header> <!-- card-header end// -->
+        <div class="card-body">
+            {% for category in categories %}
+            <article class="itemlist">
+                <div class="row align-items-center">
+                    <div class="col col-check flex-grow-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-4 col-8 flex-grow-1 col-name">
+                        <a class="itemside" href="#">
+                            <div class="left">
+                                <img src="{{ category.category_image.url }}" class="img-sm img-thumbnail" alt="{{ category.category_name }}">
+                            </div>
+                            <div class="info">
+                                <h6 class="mb-0">{{ category.category_name }}</h6>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-2 col-sm-2 col-4 col-status">
+                        <!-- Dynamically change button class based on category status -->
+                        <span id="status-{{ category.uid }}" class="badge rounded-pill {% if category.is_active %}alert-success{% else %}alert-warning{% endif %}">
+                            {% if category.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                    <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+                        <a href="{% url 'edit_category' category_uid=category.uid %}" class="btn btn-sm font-sm rounded btn-brand">
+                            <i class="material-icons md-edit"></i> Edit
+                        </a> 
+                        <a href="javascript:void(0)" class="btn btn-sm font-sm rounded btn-brand" onclick="toggleCategoryStatus('{{ category.uid }}')" id="action-btn-{{ category.uid }}">
+                            {% if not category.is_active %}
+                                Undo Delete
+                            {% else %}
+                                Delete
+                            {% endif %}
+                        </a>
+                    </div>
+                </div> <!-- row .// -->
+            </article> <!-- itemlist  .// -->
+            {% endfor %}
+        </div> <!-- card-body end// -->
+    </div> <!-- card end// -->
+    <div class="pagination-area mt-30 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div>
+</section> <!-- content-main end// -->
+
+{% endblock %}

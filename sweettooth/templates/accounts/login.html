@@ -1,0 +1,71 @@
+{% extends "base/login_base.html" %}
+
+
+{% block start %}
+
+
+        <div class="breadcrumb-area section-padding bg-gray breadcrumb-pb-60">
+            <div class="container-fluid">
+                <div class="breadcrumb-content text-center">
+                    <div class="breadcrumb-title">
+                        <h2>Login</h2>
+                    </div>
+                    <ul>
+                        <li>
+                            <a href="index.html">Home 01 </a>
+                        </li>
+                        <li><span> &gt; </span></li>
+                        <li class="active">Login</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="login-register-area  pt-60 d-flex justify-content-center align-items-center ">
+            <div class="login">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12">
+                        <div class="login-register-wrap mr-70">
+                            <h3><i class="fa fa-user-o"></i> Login</h3>
+                            <div class="login-register-form">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    {% include "base/alert.html" %}
+
+                                    <div class="sin-login-register">
+                                        <label for="email">Email</label>
+                                        <input id="email" required placeholder= "Email" type="email" name="email">
+                                    </div>
+                                    <div class="sin-login-register">
+                                        <label for="password">Password </label>
+                                        <input id="password" required placeholder= "Password" type="password" name="password">
+                                    </div>
+                                    <div class="login-register-btn-remember">
+                                        <div class="login-register-btn">
+                                            <button class="btn" type="submit">Log In</button>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'forgot_password' %}">Forgot Password</a>
+                                    <div class="login-register-options">
+                                        <p>Don't have an account? 
+                                            <a href="{% url 'signup' %}">Sign Up</a>
+                                        </p>
+                                        <p>Or sign in with:</p>
+                                        {% load socialaccount %}
+                                        <a href="{% provider_login_url 'google' %}?next=/" class="btn btn-google">
+                                            <img src="/static/images/google-logo.png" alt="Google Logo" style="height:20px; width:20px;"/> Sign In with Google
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+
+
+  
+
+
+{% endblock %}

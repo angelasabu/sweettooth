@@ -1,0 +1,103 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Order Details</h2>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Name</label>
+                            <h5>{{ order.profile.user.first_name }} {{ order.profile.user.last_name }}</h5>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category" class="form-label">Email Address</label>
+                            <p>{{ order.profile.user.email }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Phone Number</label>
+                            <p>{{ order.profile.phone_number }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Shipping Address</label>
+                            <p>{{ order.shipping_address }}</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Order Notes</label>
+                            <h3>{{ order.order_note }}</h3>
+                        </div>
+
+                        <div class="card-header">
+                            <h4>Ordered Products</h4>
+                        </div>
+                        <div class="size-variants">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order_items %}
+                                    <tr>
+                                        <td>{{ item.product_name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>₹{{ item.total_price }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-header">
+                            <div class="mb-4">
+                                <label for="category" class="form-label">Payment Method</label>
+                                <p>{{ order.payment_method }}</p>
+                            </div>
+                            <div class="mb-4">
+                                <label for="category" class="form-label">Status</label>
+                                <p>{{ order.status }}</p>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            {% if order.status == 'Pending' or order.status == 'Processing' %}
+                            <button class="btn btn-md rounded font-sm hover-up dropdown-toggle" type="button" id="statusDropdown" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Change Status
+                            </button>
+                            {% endif %}
+                            <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                                <form method="post" action="{% url 'update_order_status' order.id %}">
+                                    {% csrf_token %}
+                                    {% for value, display in status_choices %}
+                                        <li>
+                                            <button class="dropdown-item" type="submit" name="status" value="{{ value }}">
+                                                {{ display }}
+                                            </button>
+                                        </li>
+                                    {% endfor %}
+                                </form>
+                            </ul>
+                        </div>
+                        
+                        
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}

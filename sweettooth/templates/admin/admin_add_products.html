@@ -1,0 +1,244 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<script>
+    function validateForm() {
+        // Reset previous error messages
+        document.getElementById('product_name_error').style.display = 'none';
+        document.getElementById('category_error').style.display = 'none';
+        document.getElementById('product_description_error').style.display = 'none';
+        document.getElementById('image_error1').style.display = 'none';
+        document.getElementById('image_error2').style.display = 'none';
+        document.getElementById('image_error3').style.display = 'none';
+    
+        // Get the form inputs
+        var productName = document.getElementById('product_name').value;
+        var category = document.getElementById('category').value;
+        var productDescription = document.getElementById('product_description').value;
+        var productImage1 = document.getElementById('product_image1').files;
+        var productImage2 = document.getElementById('product_image2').files;
+        var productImage3 = document.getElementById('product_image3').files;
+    
+        // Allowed image formats
+        var allowedFormats = ['jpg', 'jpeg', 'png'];
+    
+        // Validation flag
+        var valid = true;
+    
+        // Field validations
+        if (productName === "") {
+            document.getElementById('product_name_error').textContent = "Please enter the product name.";
+            document.getElementById('product_name_error').style.display = 'block';
+            valid = false;
+        } else {
+            // Use fetch to check if product name exists
+            fetch(`{% url 'check_product_name' %}?product_name=${productName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        document.getElementById('product_name_error').textContent = "Product name already exists.";
+                        document.getElementById('product_name_error').style.display = 'block';
+                        console.log('name exist error')
+                        valid = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    
+     
+        if (productDescription === "") {
+            console.log('desc error')
+            document.getElementById('product_description_error').textContent = "Please enter the product description.";
+            document.getElementById('product_description_error').style.display = 'block';
+            valid = false;
+        }
+    
+        // Image upload validation
+        function checkImageFormat(imageFile, errorElementId) {
+            if (imageFile.length === 0) {
+                document.getElementById(errorElementId).textContent = "Please upload the product image.";
+                document.getElementById(errorElementId).style.display = 'block';
+                console.log('img len 0 error')
+                valid = false;
+            } else {
+                var fileName = imageFile[0].name;
+                var fileExtension = fileName.split('.').pop().toLowerCase();
+                if (!allowedFormats.includes(fileExtension)) {
+                    document.getElementById(errorElementId).textContent = "Only .jpg and .png formats are allowed.";
+                    document.getElementById(errorElementId).style.display = 'block';
+                    console.log('img format error')
+                    valid = false;
+                }
+            }
+        }
+    
+        // Check each image's format
+        checkImageFormat(productImage1, 'image_error1');
+        checkImageFormat(productImage2, 'image_error2');
+        checkImageFormat(productImage3, 'image_error3');
+
+        
+
+        console.log(valid)
+    
+        // Wait for the fetch call to complete before submitting
+        if (valid) {
+            // Delay form submission until the fetch call for product name validation is completed
+            setTimeout(function () {
+                if (valid) {
+                    document.getElementById('productForm').submit();
+                }
+            }, 500); // Add a delay to allow time for the fetch request to complete
+        }
+        else{
+            console.error
+        }
+    }
+
+    
+</script>
+
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Add New Product</h2>
+                <div>
+                    <button class="btn btn-md rounded font-sm hover-up" type="button" onclick="validateForm()">Add Product</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form id="productForm" method="POST" action="{% url 'add_product' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="product_name" class="form-label">Product Name</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="product_name" name="product_name">
+                            <span class="error-message" id="product_name_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-control" id="category" name="category">
+                                {% for category in categories %}
+                                    <option value="{{ category.uid }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="error-message" id="category_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="product_description" class="form-label">Product Description</label>
+                            <textarea placeholder="Type here" class="form-control" id="product_description" name="product_description" rows="4"></textarea>
+                            <span class="error-message" id="product_description_error"></span>
+                        </div>
+
+                        <!-- Image uploads now inside the form -->
+                        <div class="card-header">
+                            <h4>Product Images</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-upload">
+                                <input class="form-control" type="file" id="product_image1" name="product_image1" accept="image/*" >
+                                <span class="error-message" id="image_error1"></span>
+                            </div>
+                            <div class="input-upload">
+                                <input class="form-control" type="file" id="product_image2" name="product_image2" accept="image/*" >
+                                <span class="error-message" id="image_error2"></span>
+                            </div>
+                            <div class="input-upload">
+                                <input class="form-control" type="file" id="product_image3" name="product_image3" accept="image/*" >
+                                <span class="error-message" id="image_error3"></span>
+                            </div>
+                        </div>
+
+                        <div class="size-variant-container">
+                            {% for i in size_range %}
+                                <div>
+                                    <input type="text" id="size_name_{{ i }}" name="size_name_{{ i }}" placeholder="Size Name">
+                                    <input type="number" id="price_{{ i }}" name="price_{{ i }}" placeholder="Price">
+                                    <input type="number" id="stock_{{ i }}" name="stock_{{ i }}" placeholder="Stock">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.9rem;
+        display: none;
+    }
+
+
+    /* Style for the checkbox and number input container */
+    .size-variant-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* Styling for the checkbox label */
+    .size-variant-container label {
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    /* Checkbox styling */
+    .size-variant-container input[type="checkbox"] {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        accent-color: #007bff;
+    }
+
+    /* Styling for the number input */
+    .size-variant-container input[type="number"] {
+        width: 100px;
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .size-variant-container input[type="number"]:disabled {
+        background-color: #f1f1f1;
+        cursor: not-allowed;
+    }
+
+    .size-variant-container input[type="number"]:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 4px rgba(0, 123, 255, 0.25);
+    }
+    
+</style>
+
+
+
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+<script>
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+
+
+
+    function updateStatus(profileId, isActive) {
+        const statusElement = document.getElementById(`status-${profileId}`);
+        const dropdownElement = document.querySelector(`#dropdown-${profileId}`);  // Dropdown menu element
+        console.log(profileId);  // Confirm profileId is correct
+    
+        // If the status element is not found, log an error and return
+        if (!statusElement) {
+            console.error(`Element with id 'status-${profileId}' not found.`);
+            return;
+        }
+    
+        const csrftoken = getCookie('csrftoken');
+        const url = "{% url 'update_user_status' %}";  // Django URL tag
+    
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,  // Include CSRF token
+            },
+            body: JSON.stringify({
+                profile_id: profileId,  // Send profile ID
+                is_active: isActive      // Send status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update the status text dynamically
+                statusElement.innerText = isActive ? 'Active' : 'Inactive';
+                statusElement.className = isActive ? 'badge rounded-pill alert-success' : 'badge rounded-pill alert-danger';
+    
+                // Dynamically update the dropdown content
+                if (dropdownElement) {
+                    dropdownElement.innerHTML = isActive 
+                        ? `<a class="dropdown-item" href="#" onclick="updateStatus(${profileId}, false)">
+                              <i class="fas fa-ban"></i> Block
+                           </a>`
+                        : `<a class="dropdown-item" href="#" onclick="updateStatus(${profileId}, true)">
+                              <i class="fas fa-check-circle"></i> Unblock
+                           </a>`;
+                }
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the status.');
+        });
+    }
+    
+    
+</script>
+    
+
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">User List </h2>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div>
+            <input type="text" placeholder="Search order ID" class="form-control bg-white">
+        </div>
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row gx-3">
+                <div class="col-lg-4 col-md-6 me-auto">
+                    <input type="text" placeholder="Search..." class="form-control">
+                </div>
+            </div>
+        </header> <!-- card-header end// -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Date</th>
+                            <th scope="col" class="text-end">Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for profile in profiles %}
+                        <tr>
+                            <td>{{ profile.user.id }}</td>
+                            <td><b>{{ profile.full_name }}</b></td>
+                            <td><b>{{ profile.user.email }}</b></td>
+                            <td>
+                                <span id="status-{{ profile.user.id }}" class="badge rounded-pill 
+                                    {% if profile.user.is_active %}alert-success{% else %}alert-danger{% endif %}">
+                                    {% if profile.user.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ profile.created_at }}</td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm dropdown-toggle"> 
+                                        Status Change 
+                                    </a>
+                                    <ul class="dropdown-menu" id="dropdown-{{ profile.user.id }}"> 
+                                        <!-- Conditionally render the dropdown content -->
+                                        {% if profile.user.is_active %}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="updateStatus({{ profile.user.id }}, false)">
+                                                    <i class="fas fa-ban"></i> Block
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="updateStatus({{ profile.user.id }}, true)">
+                                                    <i class="fas fa-check-circle"></i> Unblock
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- table-responsive //end -->
+        </div> <!-- card-body end// -->
+    </div> <!-- card end// -->
+    <div class="pagination-area mt-15 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div>
+</section> <!-- content-main end// -->
+
+{% endblock %}

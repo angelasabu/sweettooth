@@ -1,0 +1,77 @@
+{% extends "base/admin_login_base.html" %}
+
+
+{% block start %}
+
+<script>
+    function handleSubmit(e) {
+        e.preventDefault();
+
+        // Get form elements
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        // Get error containers
+        const usernameError = document.getElementById('username-error');
+        const passwordError = document.getElementById('password-error');
+
+        // Reset previous errors
+        usernameError.innerHTML = '';
+        passwordError.innerHTML = '';
+
+        let isValid = true;
+
+        // Validate username
+        if (!username) {
+            usernameError.innerHTML = 'Username cannot be empty or contain only spaces.';
+            isValid = false;
+            return
+    
+        }
+
+        // Validate password
+        if (!password) {
+            passwordError.innerHTML = 'Password cannot be empty or contain only spaces.';
+            isValid = false;
+            return
+        } else if (password.length < 8) {
+            passwordError.innerHTML = 'Password must be at least 8 characters long.';
+            isValid = false;
+            return
+        }
+
+        // If valid, submit the form
+        if (isValid) {
+            e.target.submit();
+        }
+    }
+</script>
+
+<section class="content-main mt-80 mb-80">
+    <div class="card mx-auto card-login">
+        <div class="card-body">
+            <h4 class="card-title mb-4">Sign in</h4>
+            <form method = "POST" onsubmit="handleSubmit(event)">
+                {% csrf_token %}
+                {% include "base/alert.html" %}
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input id="username" class="form-control" name="username" placeholder="Username" type="text">
+                    <div id="username-error" class="text-danger mt-1"></div> <!-- Username error container -->
+
+                </div> <!-- form-group// -->
+                <div class="mb-3">
+                    <label for="password">Password</label>
+                    <input id="password" class="form-control" name="password" placeholder="Password" type="password">
+                    <div id="password-error" class="text-danger mt-1"></div> <!-- Password error container -->
+
+                </div>
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary w-100"> Login </button>
+                </div> <!-- form-group// -->
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,410 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Dashboard </h2>
+            <p>Whole data about your business here</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-primary-light"><i class="text-primary material-icons md-monetization_on"></i></span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Revenue</h6>
+                        <span>₹{{total_delivered_amount}}</span>
+                        <span class="text-sm">
+                            Shipping fees are not included
+                        </span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-success-light"><i class="text-success material-icons md-local_shipping"></i></span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Orders</h6> <span>{{total_orders}}</span>
+                        <span class="text-sm">
+                            Excluding orders in transit
+                        </span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-warning-light"><i class="text-warning material-icons md-qr_code"></i></span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Products</h6> <span>{{total_products}}</span>
+                        <span class="text-sm">
+                            In {{total_categories}} Categories
+                        </span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card card-body mb-4">
+                <article class="icontext">
+                    <span class="icon icon-sm rounded-circle bg-info-light"><i class="text-info material-icons md-shopping_basket"></i></span>
+                    <div class="text">
+                        <h6 class="mb-1 card-title">Monthly Earning</h6> <span>₹{{current_month_delivered_amount}}</span>
+                        <span class="text-sm">
+                            Based in your local time.
+                        </span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-8 col-lg-12">
+            <div class="card mb-4">
+                <article class="card-body">
+                    <h5 class="card-title">Sale statistics</h5>
+                    <canvas id="myChart1" height="120px"></canvas>
+                </article>
+            </div>
+            <div class="row">
+                <div class="col-lg-5">
+                    <div class="card mb-4">
+                        <article class="card-body">
+                            <h5 class="card-title">New Members</h5>
+                            <div class="new-member-list">
+                                {% for user in latest_users %}
+                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <h6>{{user.user.first_name}}</h6>
+                                                <p class="text-muted font-xs">
+                                                    {{user.user.email}}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+                    
+                </div>
+                <div class="col-lg-5">
+                    <div class="card mb-4">
+                        <article class="card-body">
+                            <h5 class="card-title">Best Selling Products</h5>
+                            <div class="product-images-row">
+                                {% for product in bestselling_products %}
+                                <div class="image-container">
+                                    <img src="{{ product.product_image }}" alt="Product Image">
+                                    <p class="image-title">{{ product.product_name }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                {% comment %} <div class="col-lg-7">
+                    <div class="card mb-4">
+                        <article class="card-body">
+                            <h5 class="card-title">Recent activities</h5>
+                            <ul class="verti-timeline list-unstyled font-sm">
+                                <li class="event-list">
+                                    <div class="event-timeline-dot">
+                                        <i class="material-icons md-play_circle_outline font-xxl"></i>
+                                    </div>
+                                    <div class="media">
+                                        <div class="me-3">
+                                            <h6><span>Today</span> <i class="material-icons md-trending_flat text-brand ml-15 d-inline-block"></i></h6>
+                                        </div>
+                                        <div class="media-body">
+                                            <div>
+                                                Lorem ipsum dolor sit amet consectetur
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="event-list active">
+                                    <div class="event-timeline-dot">
+                                        <i class="material-icons md-play_circle_outline font-xxl animation-fade-right"></i>
+                                    </div>
+                                    <div class="media">
+                                        <div class="me-3">
+                                            <h6><span>17 May</span> <i class="material-icons md-trending_flat text-brand ml-15 d-inline-block"></i></h6>
+                                        </div>
+                                        <div class="media-body">
+                                            <div>
+                                                Debitis nesciunt voluptatum dicta reprehenderit
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="event-list">
+                                    <div class="event-timeline-dot">
+                                        <i class="material-icons md-play_circle_outline font-xxl"></i>
+                                    </div>
+                                    <div class="media">
+                                        <div class="me-3">
+                                            <h6><span>13 May</span> <i class="material-icons md-trending_flat text-brand ml-15 d-inline-block"></i></h6>
+                                        </div>
+                                        <div class="media-body">
+                                            <div>
+                                                Accusamus voluptatibus voluptas.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="event-list">
+                                    <div class="event-timeline-dot">
+                                        <i class="material-icons md-play_circle_outline font-xxl"></i>
+                                    </div>
+                                    <div class="media">
+                                        <div class="me-3">
+                                            <h6><span>05 April</span> <i class="material-icons md-trending_flat text-brand ml-15 d-inline-block"></i></h6>
+                                        </div>
+                                        <div class="media-body">
+                                            <div>
+                                                At vero eos et accusamus et iusto odio dignissi
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="event-list">
+                                    <div class="event-timeline-dot">
+                                        <i class="material-icons md-play_circle_outline font-xxl"></i>
+                                    </div>
+                                    <div class="media">
+                                        <div class="me-3">
+                                            <h6><span>26 Mar</span> <i class="material-icons md-trending_flat text-brand ml-15 d-inline-block"></i></h6>
+                                        </div>
+                                        <div class="media-body">
+                                            <div>
+                                                Responded to need “Volunteer Activities
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </article>
+                    </div>
+                </div> {% endcomment %}
+            </div>
+        </div>
+        {% comment %} <div class="col-xl-4 col-lg-12">
+            <div class="card mb-4">
+                <article class="card-body">
+                    <h5 class="card-title">Revenue Base on Area</h5>
+                    <canvas id="myChart2" height="217"></canvas>
+                </article>
+            </div>
+            <div class="card mb-4">
+                <article class="card-body">
+                    <h5 class="card-title">Marketing Chanel</h5>
+                    <span class="text-muted font-xs">Facebook</span>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 15%">15%</div>
+                    </div>
+                    <span class="text-muted font-xs">Instagram</span>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 65%">65% </div>
+                    </div>
+                    <span class="text-muted font-xs">Google</span>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 51%"> 51% </div>
+                    </div>
+                    <span class="text-muted font-xs">Twitter</span>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 80%"> 80%</div>
+                    </div>
+                    <span class="text-muted font-xs">Other</span>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 80%"> 80%</div>
+                    </div>
+                </article>
+            </div>
+        </div> {% endcomment %}
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <h4 class="card-title">Latest orders</h4>
+            <div class="row align-items-center">
+                <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+                    {% comment %} <div class="custom_select">
+                        <select class="form-select select-nice">
+                            <option selected>All Categories</option>
+                            <option>Women's Clothing</option>
+                            <option>Men's Clothing</option>
+                            <option>Cellphones</option>
+                            <option>Computer & Office</option>
+                            <option>Consumer Electronics</option>
+                            <option>Jewelry & Accessories</option>
+                            <option>Home & Garden</option>
+                            <option>Luggage & Bags</option>
+                            <option>Shoes</option>
+                            <option>Mother & Kids</option>
+                        </select>
+                    </div> {% endcomment %}
+                </div>
+                {% comment %} <div class="col-md-2 col-6">
+                    <input type="date" value="02.05.2021" class="form-control">
+                </div> {% endcomment %}
+                <div class="col-md-2 col-6">
+                    {% comment %} <div class="custom_select">
+                        <select class="form-select select-nice">
+                            <option selected>Status</option>
+                            <option>All</option>
+                            <option>Paid</option>
+                            <option>Chargeback</option>
+                            <option>Refund</option>
+                        </select>
+                    </div> {% endcomment %}
+                </div>
+            </div>
+        </header>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Order</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Payment Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in latest_orders %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ order.order_date }}</td>
+                            <td>{{ order.profile.user.first_name }}</td>
+                            <td>
+                                <span 
+                                    class="{% if order.status == 'Delivered' %}status-success
+                                            {% elif order.status == 'Cancelled' or order.status == 'Cancelled by Admin' %}status-cancelled
+                                            {% else %}status-pending{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            
+                            
+                            <td>{{ order.total_amount }}</td>
+                            <td>{{ order.payment_method }}</td>
+                        </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">No orders found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% comment %} <div class="pagination-area mt-30 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div> {% endcomment %}
+</section> <!-- content-main end// -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    (function ($) {
+        "use strict";
+
+        console.log({{ products_chart_data|safe }},{{ visitors_chart_data|safe }},{{ sales_chart_data|safe }}, 'kkkkkskksks')
+    
+        /*Sale statistics Chart*/
+        if ($('#myChart1').length) {
+            var ctx = document.getElementById('myChart1').getContext('2d');
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: 'line',
+                
+                // The data for our dataset
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                            label: 'Sales',
+                            tension: 0.3,
+                            fill: true,
+                            backgroundColor: 'rgba(44, 120, 220, 0.2)',
+                            borderColor: 'rgba(44, 120, 220)',
+                            data: {{ sales_chart_data|safe }},
+                        },
+                        {
+                            label: 'Visitors',
+                            tension: 0.3,
+                            fill: true,
+                            backgroundColor: 'rgba(4, 209, 130, 0.2)',
+                            borderColor: 'rgb(4, 209, 130)',
+                            data: {{ visitors_chart_data|safe }}
+                        },
+                        {
+                            label: 'Products',
+                            tension: 0.3,
+                            fill: true,
+                            backgroundColor: 'rgba(380, 200, 230, 0.2)',
+                            borderColor: 'rgb(380, 200, 230)',
+                            data: {{ products_chart_data|safe }},
+                        }
+    
+                    ]
+                },
+                options: {
+                    plugins: {
+                    legend: {
+                        labels: {
+                        usePointStyle: true,
+                        },
+                    }
+                    }
+                }
+            });
+        } //End if
+        
+    })(jQuery);
+</script>
+
+<style>
+    .product-images-row{
+        display: flex;
+        gap: 10px;
+    }
+    .status-success {
+        color: green;
+        font-weight: bold;
+    }
+    
+    .status-cancelled {
+        color: red;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        color: #FF8C00; /* Dark orange */
+        font-weight: bold;
+    }
+    
+</style>
+
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'base/base.html' %}
+
+{% block start %}
+
+
+<script>
+    function getCSRFToken() {
+        let cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            if (cookie.trim().startsWith('csrftoken=')) {
+                return cookie.trim().split('=')[1];
+            }
+        }
+        return '';
+    }
+    
+    function confirmDelete(itemId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log(`Attempting to delete wishlist item with ID: ${itemId}`);
+                fetch(`/cart/delete_wishlist_item/${itemId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response from server:', data); // Debug server response
+                    if (data.success) {
+                        Swal.fire("Deleted!", "The item has been removed from your wishlist.", "success");
+                        document.getElementById(`wishlist-item-${itemId}`).remove(); // Remove the item from the DOM
+                    } else {
+                        Swal.fire("Error!", data.error || "There was an error deleting the item.", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    Swal.fire("Error!", "There was an error deleting the item.", "error");
+                });
+            }
+        });
+    }
+    
+    
+    </script>
+    
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+<div class="breadcrumb-area section-padding-1 bg-gray breadcrumb-ptb-1">
+    <div class="container-fluid">
+        <div class="breadcrumb-content text-center">
+            <div class="breadcrumb-title">
+                <h2>Wishlist</h2>
+            </div>
+            <ul>
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+                <li><span> &gt; </span></li>
+                <li class="active"> Wishlist </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="wishlist-main-area pt-100 pb-100">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                <form action="#">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="table-content table-responsive wishlist-table-content">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <th>Product</th>
+                                            <th>Size</th>
+                                            <th>Stock Status</th>
+                                            <th> Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in wishlist_items %}
+                                        <tr id="wishlist-item-{{ item.id }}">
+                                            <td class="wishlist-remove">
+                                                <a href="javascript:void(0);" onclick="confirmDelete({{ item.id }})">
+                                                    <i class="dlicon ui-1_simple-remove"></i>
+                                                </a>
+                                            </td>
+                                            <td class="wishlist-img">
+                                                <a href="{% url 'get_products' item.product.slug %}"><img src="{{ item.product.product_images.first.image.url }}" alt="{{ item.product.product_name }}"></a>
+                                            </td>
+                                            <td class="wishlist-name">
+                                                <a href="{% url 'get_products' item.product.slug %}">{{ item.product.product_name }}</a>
+                                            </td>
+                                            <td class="wishlist-size">
+                                                {% if item.size_variant %}
+                                                    <a>{{ item.size_variant.size_name }}</a>
+                                                {% else %}
+                                                    <a>N/A</a>
+                                                {% endif %}
+                                            </td>
+                                            
+                                            <td class="wishlist-stock">
+                                                {% if item.stock > 0 %}
+                                                    <span>In Stock</span>
+                                                {% else %}
+                                                    <span>Out of Stock</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="wishlist-price">
+                                                {% if item.has_discount %}
+                                                    <span class="original-price"><del>₹{{ item.original_price }}</del></span>
+                                                    <span class="discounted-price">₹{{ item.discounted_price }}</span>
+                                                {% else %}
+                                                    <span>₹{{ item.original_price }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* General table styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+    }
+
+    tbody tr {
+        border-bottom: 1px solid #ddd;
+        transition: background-color 0.3s ease;
+    }
+
+    tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    td {
+        padding: 10px 15px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Remove button styling */
+    .wishlist-remove a {
+        color: #ff4d4d;
+        font-size: 16px;
+        transition: color 0.3s ease;
+    }
+
+    .wishlist-remove a:hover {
+        color: #d80000;
+    }
+
+    /* Image styling */
+    .wishlist-img img {
+        width: 80px; /* Adjust for small size */
+        height: auto; /* Maintain aspect ratio */
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Name and size styling */
+    .wishlist-name a, 
+    .wishlist-size a {
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .wishlist-name a:hover, 
+    .wishlist-size a:hover {
+        color: #007bff;
+    }
+
+    /* Stock status styling */
+    .wishlist-stock span {
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .wishlist-stock span:nth-child(1) { /* In Stock */
+        color: #28a745;
+        background-color: #d4edda;
+    }
+
+    .wishlist-stock span:nth-child(2) { /* Out of Stock */
+        color: #dc3545;
+        background-color: #f8d7da;
+    }
+
+    /* Price styling */
+    .wishlist-price span {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Add to cart button styling */
+    .wishlist-cart a {
+        display: inline-block;
+        font-size: 14px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #007bff;
+        padding: 5px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .wishlist-cart a:hover {
+        background-color: #0056b3;
+    }
+
+    
+    </style>
+
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+    
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Sales Report</h2>
+
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                
+                <div class="card-body">
+                    <form id="productForm" method="GET" action="{% url 'sales_report_pdf' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            <span class="error-message" id="start_date_error"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            <span class="error-message" id="expiry_date_error"></span>
+                        </div>
+
+                        <button class="btn btn-md rounded font-sm hover-up" type="submit" >
+                            Download Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base/login_base.html" %}
+
+
+{% block start %}
+
+<script>
+    function clearErrors() {
+        // Clear all previous error messages
+        document.querySelectorAll('.error-message').forEach(el => el.innerText = '');
+    }
+
+    function validateForm() {
+        // Clear previous errors
+        clearErrors();
+        
+        let isValid = true;
+    
+        // Get form fields
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phoneNumber = document.getElementById('phone_number').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const confirmPassword = document.getElementById('confirm_password').value.trim();
+        
+        // Validate fields are not empty
+        if (!firstName) {
+            document.getElementById('first_name_error').innerText = 'First name is required.';
+            isValid = false;
+        } else if (!/^[A-Z][a-zA-Z]*$/.test(firstName)) {
+            document.getElementById('first_name_error').innerText = 'First name must start with a capital letter and contain only alphabets.';
+            isValid = false;
+        }
+    
+        if (!lastName) {
+            document.getElementById('last_name_error').innerText = 'Last name is required.';
+            isValid = false;
+        } else if (!/^[A-Z][a-zA-Z]*$/.test(lastName)) {
+            document.getElementById('last_name_error').innerText = 'Last name must start with a capital letter and contain only alphabets.';
+            isValid = false;
+        }
+    
+        if (!email) {
+            document.getElementById('email_error').innerText = 'Email is required.';
+            isValid = false;
+        }
+    
+        // Check email validity
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailPattern.test(email)) {
+            document.getElementById('email_error').innerText = 'Please enter a valid email address.';
+            isValid = false;
+        }
+    
+        // Check phone number validity (not all zeros, digits only)
+        const phonePattern = /^[1-9][0-9]*$/;
+        if (!phoneNumber || !phonePattern.test(phoneNumber) || phoneNumber.length < 10) {
+            document.getElementById('phone_number_error').innerText = 'Please enter a valid phone number.';
+            isValid = false;
+        } else if (/^0+$/.test(phoneNumber)) {
+            document.getElementById('phone_number_error').innerText = 'Phone number cannot be all zeros.';
+            isValid = false;
+        }
+    
+        // Password validations
+        const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        const repeatPattern = /(.)\1{3,}/;
+
+        if (password.length < 8) {
+            document.getElementById('password_error').innerText = 'Password must be at least 8 characters long.';
+            isValid = false;
+        } else if (!strongPasswordPattern.test(password)) {
+            document.getElementById('password_error').innerText = 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+            isValid = false;
+        } else if (repeatPattern.test(password)) {
+            document.getElementById('password_error').innerText = 'Password cannot contain the same character more than three times in a row.';
+            isValid = false;
+        }
+    
+        // Check if passwords match
+        if (password !== confirmPassword) {
+            document.getElementById('confirm_password_error').innerText = 'Passwords do not match.';
+            isValid = false;
+        }
+    
+        return isValid; // Form is valid if no errors
+    }
+    
+</script>
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+</style>
+
+
+<div class="breadcrumb-area section-padding bg-gray breadcrumb-pb-60">
+    <div class="container-fluid">
+        <div class="breadcrumb-content text-center">
+            <div class="breadcrumb-title">
+                <h2>Register</h2>
+            </div>
+            <ul>
+                <li>
+                    <a href="index.html">Home 01 </a>
+                </li>
+                <li><span> &gt; </span></li>
+                <li class="active">Register </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-6 col-md-6">
+    <div class="login-register-wrap register-wrap">
+        
+    </div>
+</div>
+
+<div class="login-register-area  pt-60 d-flex justify-content-center align-items-center ">
+    <div class="login">
+        <div class="row">
+            <div class="col-lg-12 col-md-12">
+                <div class="login-register-wrap mr-70">
+                    <h3> <i class="fa fa-user-o"></i>Sign Up</h3>
+                    <div class="form-container">
+                        <div class="login-register-form ">
+                            <form method="POST" onsubmit="return validateForm()">
+                                {% csrf_token %}
+                                {% include "base/alert.html" %}
+                                
+                                <div class="sin-login-register">
+                                    <label for="first_name">First Name</label>
+                                    <input id="first_name" required placeholder="First Name" type="text" name="first_name">
+                                    <div class="error-message" id="first_name_error"></div>
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="last_name">Last Name</label>
+                                    <input id="last_name" required placeholder="Last Name" type="text" name="last_name">
+                                    <div class="error-message" id="last_name_error"></div>
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="email">Email address</label>
+                                    <input id="email" required placeholder="Email" type="email" name="email">
+                                    <div class="error-message" id="email_error"></div>
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="phone_number">Phone Number</label>
+                                    <input id="phone_number" required placeholder="Phone Number" type="text" name="phone_number">
+                                    <div class="error-message" id="phone_number_error"></div>
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="referral_code">Referral Code (Optional)</label>
+                                    <input id="referral_code" placeholder="Referral Code" type="text" name="referral_code">
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="password">Password</label>
+                                    <input id="password" required placeholder="Password" type="password" name="password">
+                                    <div class="error-message" id="password_error"></div>
+                                </div>
+                                <div class="sin-login-register">
+                                    <label for="confirm_password">Confirm Password</label>
+                                    <input id="confirm_password" required placeholder="Confirm Password" type="password" name="confirm_password">
+                                    <div class="error-message" id="confirm_password_error"></div>
+                                </div>
+                                <div class="login-register-btn">
+                                    <button class="btn" type="submit">Sign Up</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

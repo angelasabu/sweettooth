@@ -1,0 +1,189 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+<script>
+
+
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+
+    function toggleStatus(productId, isActive, stock) {
+        console.log(stock);
+        
+        // Check if stock is less than 1 and user is trying to make the product active
+        if (isActive && stock < 1) {
+            alert('There is no stock. You cannot activate this product.');
+            return;  // Exit the function if there is no stock
+        }
+    
+        const csrfToken = getCookie('csrftoken');
+    
+        fetch("{% url 'toggle_product_status' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                'is_active': isActive,
+                'product_id': productId,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const statusElement = document.getElementById(`status-${productId}`);
+                const deleteBtn = document.getElementById(`delete-btn-${productId}`);
+                const undoBtn = document.getElementById(`undo-btn-${productId}`);
+                
+                if (isActive) {
+                    statusElement.textContent = 'Active';
+                    statusElement.classList.remove('alert-danger');
+                    statusElement.classList.add('alert-success');
+                    deleteBtn.removeAttribute('hidden');
+                    undoBtn.setAttribute('hidden', true);
+                } else {
+                    statusElement.textContent = 'Inactive';
+                    statusElement.classList.remove('alert-success');
+                    statusElement.classList.add('alert-danger');
+                    deleteBtn.setAttribute('hidden', true);
+                    undoBtn.removeAttribute('hidden');
+                }
+            } else {
+                alert('Error updating product status.');
+            }
+        });
+    }
+    
+    
+</script>
+
+<section class="content-main">
+    <div class="content-header">
+        <div>
+            <h2 class="content-title card-title">Products List</h2>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div>
+            <a href="#" class="btn btn-light rounded font-md">Export</a>
+            <a href="#" class="btn btn-light rounded  font-md">Import</a>
+            <a href="#" class="btn btn-primary btn-sm rounded">Create new</a>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <header class="card-header">
+            <div class="row align-items-center">
+                <div class="col col-check flex-grow-0">
+                    <div class="form-check ms-2">
+                        <input class="form-check-input" type="checkbox" value="">
+                    </div>
+                </div>
+                <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+                    <select class="form-select">
+                        <option selected>All category</option>
+                        <option>Electronics</option>
+                        <option>Clothes</option>
+                        <option>Automobile</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-6">
+                    <input type="date" value="02.05.2021" class="form-control">
+                </div>
+                <div class="col-md-2 col-6">
+                    <select class="form-select">
+                        <option selected>Status</option>
+                        <option>Active</option>
+                        <option>Disabled</option>
+                        <option>Show all</option>
+                    </select>
+                </div>
+            </div>
+        </header> <!-- card-header end// -->
+        <div class="card-body">
+            {% for product in products %}
+<article class="itemlist">
+    <div class="row align-items-center">
+        <div class="col col-check flex-grow-0">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox">
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-4 col-8 flex-grow-1 col-name">
+            <a class="itemside" href="#">
+                <div class="left">
+                    {% if product.product_images.all %}
+                    <img src="{{ product.product_images.first.image.url }}" class="img-sm img-thumbnail" alt="Item">
+                    {% endif %}
+                </div>
+                <div class="info">
+                    <h6 class="mb-0">{{ product.product_name }}</h6>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-2 col-sm-2 col-4 col-status">
+            {% if product.stock < 1 or not product.is_active %}
+                <span class="badge rounded-pill alert-danger" id="status-{{ product.uid }}">Inactive</span>
+            {% else %}
+                <span class="badge rounded-pill alert-success" id="status-{{ product.uid }}">Active</span>
+            {% endif %}
+        </div>
+        <div class="col-lg-1 col-sm-2 col-4 col-date">
+            <span>{{ product.created_at }}</span>
+        </div>
+        <div class="col-lg-2 col-sm-2 col-4 col-action text-end">
+            <a href="{% url 'product_detail' product_id=product.uid %}" class="btn btn-sm font-sm rounded btn-brand">
+                <i class="material-icons md-edit"></i> View
+            </a>
+            <!-- Delete Button: Visible if the product is active -->
+            <a href="#" id="delete-btn-{{ product.uid }}" class="btn btn-sm font-sm rounded btn-brand"
+                {% if not product.is_active %} hidden {% endif %}
+                onclick="toggleStatus('{{ product.uid }}', false, {{ product.stock }})">
+                <i class="material-icons md-delete_forever"></i> Delete
+            </a>
+
+            <!-- Undo Delete Button: Visible if the product is inactive -->
+            <a href="#" id="undo-btn-{{ product.uid }}" class="btn btn-sm font-sm btn-light rounded"
+                {% if product.is_active %} hidden {% endif %}
+                onclick="toggleStatus('{{ product.uid }}', true, {{ product.stock }})">
+                <i class="material-icons md-undo"></i> Undo Delete
+            </a>
+        </div>
+    </div> <!-- row .// -->
+</article> <!-- itemlist  .// -->
+{% endfor %}
+
+        </div> <!-- card-body end// -->
+    </div> <!-- card end// -->
+    <div class="pagination-area mt-30 mb-50">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                <li class="page-item"><a class="page-link" href="#">02</a></li>
+                <li class="page-item"><a class="page-link" href="#">03</a></li>
+                <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                <li class="page-item"><a class="page-link" href="#">16</a></li>
+                <li class="page-item"><a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a></li>
+            </ul>
+        </nav>
+    </div>
+</section> <!-- content-main end// -->
+
+{% endblock %}

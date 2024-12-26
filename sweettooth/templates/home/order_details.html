@@ -1,0 +1,202 @@
+{% extends 'base/base.html' %}
+
+{% block start %}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .cancel-btn{
+        display: inline-block;
+        font-size: 14px;
+        color: #fff;
+        padding: 22px 50px;
+        background-color: #262626;
+        font-weight: bold;
+        line-height: 1;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+    }
+    .cancel-btn:hover{
+        background-color: #fc4f4f;
+        text-align: center;
+        color: #fff;
+    }
+    
+</style>
+
+<div class="breadcrumb-area section-padding-1 bg-gray breadcrumb-ptb-1">
+    <div class="container-fluid">
+        <div class="breadcrumb-content text-center">
+            <div class="breadcrumb-title">
+                <h2>Order Details</h2>
+            </div>
+            <ul>
+                <li>
+                    <a href="index.html">Home 01 </a>
+                </li>
+                <li><span> &gt; </span></li>
+                <li class="active">Order Details </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- checkout start -->
+<div class="checkout-main-area pt-100 pb-100">
+    <div class="container">
+        <div class="checkout-wrap">
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="billing-info-wrap mr-100">
+                        <h3>Billing Details</h3>
+                        <div class="single-input-item">
+                            <label>Name:</label>
+                            <p id="view-full-name">{{ order.profile.user.first_name }} {{ order.profile.user.last_name }}</p>
+                        </div>
+                        <div class="single-input-item">
+                            <label>Email Address:</label>
+                            <p id="view-email">{{ order.profile.user.email }}</p>
+                        </div>
+                        <div class="single-input-item">
+                            <label>Phone Number:</label>
+                            <p id="view-phone">{{ order.profile.phone_number }}</p>
+                        </div>
+                        <div class="single-input-item">
+                            <label>Shipping Address:</label>
+                            <p id="view-address">{{ order.shipping_address }}</p>
+                        </div>
+                        {% if order.status == 'Pending' or order.status == 'Processing' %}
+                            <button class="cancel-btn sqr-btn" id="cancelOrderBtn" type="button">Cancel Order</button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="your-order-area">
+                        <h3>Your Order</h3>
+                        <div class="your-order-wrap gray-bg-4">
+                            <div class="your-order-info-wrap">
+                                <div class="your-order-info">
+                                    <ul>
+                                        <li>Product <span>Total</span></li>
+                                    </ul>
+                                </div>
+                                <div class="your-order-middle">
+                                    <ul>
+                                        {% for item in order_items %}
+                                            <li>{{ item.product_name }} X {{ item.quantity }} 
+                                                <span>₹{{ item.price }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% if order.applied_coupon %}
+                                <div class="single-input-item">
+                                    <label>Applied Coupon:</label>
+                                    <p id="view-coupon">{{ order.applied_coupon }}</p>
+                                </div>
+                                {% endif %}
+                                <div class="your-order-info order-total">
+                                    <ul>
+                                        <li>Total <span>₹{{ order.total_amount }}</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-method mt-20">
+                            <h4>Payment Method</h4>
+                            <p>{{ order.payment_method }}</p>
+                            <p>Order Status: {{ order.status }}</p>
+                            {% if not order.is_paid and order.payment_method == "Razorpay" %}
+                                <p>Status: <span class="text-warning">Pending</span></p>
+                                    <button id="rzp-button" class="cancel-btn sqr-btn" type="button">
+                                        Retry Payment
+                                    </button>
+                            {% endif %}
+                        </div>                        
+                    </div>
+                    {% if order.status == 'Delivered' %}
+                        <button class="cancel-btn sqr-btn" type="button" onclick="window.location.href='{% url 'download_invoice' order.id %}'">
+                            Download Invoice
+                        </button>                    
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    const options = {
+        key: "{{razorpay_merchant_key}}", // Enter Razorpay Key ID
+        name: "SweetTooth",
+        description: "Retry Payment",
+        order_id: "{{ razorpay_order_id }}", // Use existing Razorpay Order ID
+        callback_url: "{{ callback_url }}",
+        theme: {
+            color: "#3399cc",
+        },
+    };
+
+    document.getElementById("rzp-button").onclick = function (e) {
+        const rzp = new Razorpay(options);
+        rzp.open();
+        e.preventDefault();
+    };
+</script>
+<script>
+    const cancelOrderBtn = document.getElementById('cancelOrderBtn')
+    cancelOrderBtn.addEventListener('click',  ()=> {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, cancel it!",
+            cancelButtonText: "Not now"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Make an AJAX request to the backend to update the order status
+                cancelOrder();
+            }
+        });
+    });
+
+    function cancelOrder() {
+        // Assuming you have the order ID from the template or context
+        let orderId = {{ order.id }};  // Replace with the correct order ID
+
+        fetch(`/cancel_order/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'  // CSRF token for POST request
+            },
+            body: JSON.stringify({
+                order_id: orderId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: "Cancelled!",
+                    text: "Your order has been cancelled.",
+                    icon: "success"
+                });
+                // Optionally, update the order status on the page dynamically
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: data.message,
+                    icon: "error"
+                });
+            }
+        });
+    }
+</script>
+
+{% endblock %}

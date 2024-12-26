@@ -1,0 +1,104 @@
+{% extends "base/admin_base.html" %}
+
+
+{% block start %}
+
+
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Add Offer</h2>
+                <div>
+                    <button class="btn btn-md rounded font-sm hover-up" type="submit" id="submitOffer">
+                        Add Offer
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Basic</h4>
+                </div>
+                <div class="card-body">
+                    <form id="categoryOfferForm" method="POST" action="{% url 'add_category_offer' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-control" id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.uid }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="error-message text-danger" id="category_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="percentage" class="form-label">Percentage</label>
+                            <input type="number" placeholder="Type here" class="form-control" id="percentage" name="percentage" step="0.01" required>
+                            <span class="error-message text-danger" id="percentage_error"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label for="expiry_date" class="form-label">Expiry Date</label>
+                            <input type="date" class="form-control" id="expiry_date" name="expiry_date" required>
+                            <span class="error-message text-danger" id="expiry_date_error"></span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<style>
+    .error-message {
+        color: red;
+        font-size: 0.875em;
+        margin-top: 5px;
+    }
+</style>
+
+
+
+<script>
+    document.getElementById("submitOffer").addEventListener("click", function () {
+        let form = document.getElementById("categoryOfferForm");
+        let valid = true;
+
+        // Clear previous error messages
+        document.querySelectorAll(".error-message").forEach((el) => el.innerText = "");
+
+        // Validate category
+        let category = document.getElementById("category");
+        if (!category.value) {
+            document.getElementById("category_error").textContent = "Category is required.";
+            valid = false;
+        }
+
+        // Validate percentage
+        let percentage = document.getElementById("percentage");
+        if (!percentage.value || percentage.value <= 0) {
+            document.getElementById("percentage_error").textContent = "Valid percentage is required.";
+            valid = false;
+        }
+
+        // Validate expiry date
+        let expiry_date = document.getElementById("expiry_date");
+        if (!expiry_date.value) {
+            document.getElementById("expiry_date_error").textContent = "Expiry date is required.";
+            valid = false;
+        }
+
+        if (valid) {
+            form.submit();
+        }
+    });
+</script>
+
+{% endblock %}

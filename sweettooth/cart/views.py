@@ -337,7 +337,7 @@ def checkout(request, slug):
 
     # order id of the newly created order
     razorpay_order_id = razorpay_order['id']
-    callback_url = 'http://127.0.0.1:8000/cart/paymenthandler/'
+    callback_url = f'{settings.BASE_APP_URL}/cart/paymenthandler/'
 
     context = {
         'profile': profile,

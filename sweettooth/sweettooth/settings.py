@@ -27,7 +27,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # SECURITY WARNING: keep the secret key used in production secret!
 
 
-SECRET_KEY = 'django-insecure-=di%!&$g&5y0z#^_x)ek+exa2gp+1x@usd*y2cy5(s$nh2+vg1'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -103,7 +103,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sweettooth.wsgi.application'
-
+BASE_APP_URL = os.getenv("BASE_APP_URL")
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -111,9 +111,9 @@ WSGI_APPLICATION = 'sweettooth.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sweettooth_project',
-        'USER': 'postgres',
-        'PASSWORD': 'resysabu000',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': 'localhost',  
         'PORT': '5432',       
     },
@@ -178,12 +178,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'EMAIL'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'angelasabu66@gmail.com'
-EMAIL_HOST_PASSWORD = 'uemz sfza cdti ohuc'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 
 

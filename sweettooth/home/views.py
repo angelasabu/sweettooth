@@ -29,8 +29,11 @@ def index(request):
         item_count = sum(item.quantity for item in cart_items)
     except:
         item_count = 0
+        
+    latest_products = Product.objects.filter(is_active=True).order_by('-uid')[:6]
     context = {
-        'item_count' : item_count 
+        'item_count' : item_count,
+        'latest_products' : latest_products
     }
     return render(request, 'home/index.html', context)
 

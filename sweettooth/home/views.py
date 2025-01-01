@@ -42,6 +42,7 @@ def index(request):
 def shop(request):
     search_query = request.GET.get('q', '')
     sort_option = request.GET.get('sort', 'default')
+    category_filter = request.GET.get('category', '')  # Get the selected category from the query string
 
     try:
         cart = request.user.profile.cart
@@ -50,15 +51,27 @@ def shop(request):
     except:
         item_count = 0
 
+    # Base queryset
     products = Product.objects.filter(
-        Q(product_name__icontains=search_query) | Q(category__category_name__icontains=search_query),
         category__is_active=True,
         is_active=True
-    ) if search_query else Product.objects.filter(category__is_active=True, is_active=True)
+    )
 
-    if search_query and not products.exists():
-        messages.info(request, "No matches found for your search.")
+    # Apply search filter
+    if search_query:
+        products = products.filter(
+            Q(product_name__icontains=search_query) | Q(category__category_name__icontains=search_query)
+        )
 
+    # Apply category filter
+    if category_filter:
+        products = products.filter(category__slug=category_filter)
+
+    # Handle no matches
+    if (search_query or category_filter) and not products.exists():
+        messages.info(request, "No matches found for your search or filter.")
+
+    # Process products with pricing and discounts
     products_with_price = []
     for product in products:
         first_in_stock_variant = product.size_variants.filter(stock__gt=0).first()
@@ -67,8 +80,8 @@ def shop(request):
 
             # Check for category offer
             category_offer = CategoryOffer.objects.filter(
-                category=product.category, 
-                is_active=True, 
+                category=product.category,
+                is_active=True,
                 expiry_date__gte=timezone.now()
             ).first()
 
@@ -92,18 +105,26 @@ def shop(request):
                 'has_discount': False
             })
 
+    # Sorting logic
     if sort_option == 'price_asc':
         products_with_price.sort(key=lambda p: p['discounted_price'] or float('inf'))
     elif sort_option == 'price_desc':
         products_with_price.sort(key=lambda p: p['discounted_price'] or 0, reverse=True)
+
+    # Get all categories for the filter menu
+    categories = Category.objects.filter(is_active=True)
 
     context = {
         'products_with_price': products_with_price,
         'search_query': search_query,
         'sort_option': sort_option,
         'item_count': item_count,
+        'categories': categories,  # Pass categories to the template
+        'selected_category': category_filter,  # Keep track of the selected category
     }
     return render(request, 'home/shop.html', context)
+
+
 
 
 @login_required(login_url='login')

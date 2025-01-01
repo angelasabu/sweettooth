@@ -30,13 +30,21 @@
     <div class="container">
         <div class="shop-top-bar">
             <div class="shop-top-bar-left">
-                <div class="shop-top-show">
-                    <span>Showing 1–12 of 39 results</span>
-                </div>
                 
             </div>
             <div class="shop-top-bar-right">
-                
+                <div class="shop-filter ml-50">
+                    <form method="GET" id="category-filter-form">
+                        <select name="category" class="shop-filter-active" onchange="document.getElementById('category-filter-form').submit();">
+                            <option value="">filter</option>
+                            {% for category in categories %}
+                                <option value="{{ category.slug }}" {% if category.slug == selected_category %}selected{% endif %}>
+                                    {{ category.category_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
                 <div class="shop-short-by ml-50">
                     <span>Sort by <i class="fa fa-angle-down angle-down"></i> <i class="fa fa-angle-up angle-up"></i></span>
                     <ul>
